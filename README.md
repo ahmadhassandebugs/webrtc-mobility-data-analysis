@@ -11,7 +11,6 @@ Data analysis and plotting scripts for the WebRTC Mobility study.
 
 - All analysis scripts go inside [scripts/analysis](./scripts/analysis)
 - All plotting scripts go inside [scripts/plotting](./scripts/plotting)
-- The common scripts (e.g., preprocessing) for webrtc logs go inside [utils/webrtc](./utils/webrtc)
 - The plotting utility functions will be inside [utils/plotting.py](./utils/plotting.py)
 - The project context (data folders etc.) info will go inside [utils/context.py](./utils/context.py)
 
