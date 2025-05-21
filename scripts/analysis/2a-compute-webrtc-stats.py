@@ -18,7 +18,8 @@ SERVER_FOLDER = os.path.join(DATA_FOLDER, "server")
 PROCESSED_DATA_FOLDER = os.path.join(data_processed_dir, EXPR_FOLDER)
 os.makedirs(PROCESSED_DATA_FOLDER, exist_ok=True)
 SUMMARY_FILE = os.path.join(DATA_FOLDER, "summary.txt")
-OPS = ["att", "tmb", "vzw"]
+# OPS = ["att", "tmb", "vzw"]
+OPS = ["bothtest"]
 
 ## PROCESSING
 
