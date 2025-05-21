@@ -146,6 +146,9 @@ def parse_csv(df):
         "transport_bytes_received": transport_combined["bytes_received"].max(),
         "transport_packets_sent": transport_combined["packets_sent"].max(),
         "transport_packets_received": transport_combined["packets_received"].max(),
+        # Derived metrics
+        "combined_send_bitrate_mbps": (transport_combined["bytes_sent"].max() * 8) / (total_time_secs * 1e6),
+        "combined_recv_bitrate_mbps": (transport_combined["bytes_received"].max() * 8) / (total_time_secs * 1e6),
     }
     
     # Add audio stats with prefix
