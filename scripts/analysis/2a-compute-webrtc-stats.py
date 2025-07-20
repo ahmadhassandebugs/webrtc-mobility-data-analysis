@@ -11,7 +11,7 @@ from utils.context import data_dir, data_processed_dir
 from helpers.webrtc import get_client_video_stats, get_server_video_stats
 
 ## CONFIG
-EXPR_FOLDER = os.path.join("may25-campaign", "testing")
+EXPR_FOLDER = os.path.join("july25-campaign", "testing")
 DATA_FOLDER = os.path.join(data_dir, EXPR_FOLDER)
 CLIENT_FOLDER = os.path.join(DATA_FOLDER, "client")
 SERVER_FOLDER = os.path.join(DATA_FOLDER, "server")
@@ -19,7 +19,7 @@ PROCESSED_DATA_FOLDER = os.path.join(data_processed_dir, EXPR_FOLDER)
 os.makedirs(PROCESSED_DATA_FOLDER, exist_ok=True)
 SUMMARY_FILE = os.path.join(DATA_FOLDER, "summary.txt")
 # OPS = ["att", "tmb", "vzw"]
-OPS = ["bothtest"]
+OPS = ["test"]
 
 ## PROCESSING
 

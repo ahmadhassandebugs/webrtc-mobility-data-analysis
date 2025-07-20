@@ -72,7 +72,7 @@ def parse_csv(df):
     """
     # Convert timestamps
     df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
-    df["api_timestamp"] = pd.to_datetime(df["api_timestamp"], unit="ms")
+    df["api_timestamp"] = pd.to_datetime(df["api_timestamp"].astype(int), unit="ms")
     
     # Calculate total time
     total_time_secs = (df["timestamp"].max() - df["timestamp"].min()).total_seconds()
