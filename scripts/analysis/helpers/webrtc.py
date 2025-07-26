@@ -30,7 +30,7 @@ def get_server_video_stats(df, mode="vca"):
     # df["vout_timestamp"] = pd.to_datetime(df["vout_timestamp"], unit="ms")
     # df["vin_timestamp"] = pd.to_datetime(df["vin_timestamp"], unit="ms")
     # total_time_vout_secs = (df["vout_timestamp"].max() - df["vout_timestamp"].min()).total_seconds()
-    # total_time_vin_secs = (df["vin_timestamp"].max() - df["vin_timestamp"].min()).total_seconds()
+    # total_time_vin_secs = (df["vin_timestamp"].min() - df["vin_timestamp"].min()).total_seconds()
     # total_bytes_sent = df["vout_bytesSent"].max()
     # total_packets_sent = df["vout_packetsSent"].max()
     # total_packets_received = df["vin_packetsReceived"].max()
@@ -45,6 +45,100 @@ def get_server_video_stats(df, mode="vca"):
     #     "receive_rtt_ms": receive_rtt,
     # }
     return parse_csv(df)
+
+
+def extract_video_plotting_data(df, is_server=False):
+    """
+    Extract time-series data for plotting video bitrate vs frame delay.
+    
+    Args:
+        df: DataFrame with WebRTC statistics
+        is_server: Boolean indicating if this is server data (for unit conversion)
+        
+    Returns:
+        Dictionary with plotting data:
+        - timestamps: list of timestamps
+        - video_bitrates: list of video bitrates in Mbps
+        - frame_delays: list of frame delays in ms
+        - direction: 'inbound' or 'outbound'
+    """
+    # Convert timestamps
+    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+    
+    # Filter for video data only
+    video_df = df[df["stream_type"] == "video"]
+    
+    # Separate inbound and outbound data
+    inbound_df = video_df[video_df["direction"] == "inbound"]
+    outbound_df = video_df[video_df["direction"] == "outbound"]
+    
+    # Calculate time windows for bitrate calculation (e.g., 1-second windows)
+    time_window_secs = 1.0
+    
+    def calculate_time_series_bitrate(stream_df, direction):
+        if stream_df.empty:
+            return [], [], []
+        
+        # Sort by timestamp
+        stream_df = stream_df.sort_values("timestamp")
+        
+        timestamps = []
+        bitrates = []
+        frame_delays = []
+        
+        # Calculate bitrate over time windows
+        start_time = stream_df["timestamp"].min()
+        end_time = stream_df["timestamp"].max()
+        
+        current_time = start_time
+        while current_time < end_time:
+            window_end = current_time + pd.Timedelta(seconds=time_window_secs)
+            
+            # Get data in current window
+            window_data = stream_df[
+                (stream_df["timestamp"] >= current_time) & 
+                (stream_df["timestamp"] < window_end)
+            ]
+            
+            if not window_data.empty:
+                # Calculate bitrate for this window
+                total_bytes = window_data["bytes"].max() - window_data["bytes"].min()
+                if total_bytes > 0:
+                    # Convert to Mbps (bytes * 8 bits / byte / 1e6 bits per Mbps)
+                    bitrate_mbps = (total_bytes * 8) / (time_window_secs * 1e6)
+                    
+                    # If server data is reported in kbps, convert to Mbps
+                    if is_server:
+                        # Server data appears to be reported in kbps, so convert to Mbps
+                        bitrate_mbps = bitrate_mbps / 1000.0  # Convert kbps to Mbps
+                    
+                    # Get average frame delay for this window
+                    avg_frame_delay = window_data["frame_delay_ms"].mean()
+                    
+                    timestamps.append(current_time)
+                    bitrates.append(bitrate_mbps)
+                    frame_delays.append(avg_frame_delay)
+            
+            current_time = window_end
+        
+        return timestamps, bitrates, frame_delays
+    
+    # Calculate time series for both directions
+    inbound_timestamps, inbound_bitrates, inbound_frame_delays = calculate_time_series_bitrate(inbound_df, "inbound")
+    outbound_timestamps, outbound_bitrates, outbound_frame_delays = calculate_time_series_bitrate(outbound_df, "outbound")
+    
+    return {
+        "inbound": {
+            "timestamps": inbound_timestamps,
+            "bitrates": inbound_bitrates,
+            "frame_delays": inbound_frame_delays
+        },
+        "outbound": {
+            "timestamps": outbound_timestamps,
+            "bitrates": outbound_bitrates,
+            "frame_delays": outbound_frame_delays
+        }
+    }
 
 
 def parse_csv(df):
